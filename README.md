@@ -1,1 +1,1 @@
-# action-setup-artifacts
+# action-artifacts-setup
