@@ -1,0 +1,40 @@
+---
+name: 'Artifacts Setup'
+description: 'Set outputs to work with Artifacts Actions'
+inputs:
+  artifacts-url:
+    description: 'The url of Artifacts'
+    required: true
+outputs:
+  artifacts-name:
+    description: |
+      The name of the artifacts for a specific workflow.
+      This name will be unique for the whole workflow and can be
+      used by further steps to locate the artifacts inside a job.
+    value: ${{ steps.artifacts-name.outputs.artifacts-name }}
+  artifacts-link:
+    description: |
+      The full url in which artifacts will be stored.
+    value: ${{ inputs.artifacts_url }}/builds/${{ steps.artifacts-name.outputs.artifacts-name }}
+runs:
+  using: "composite"
+  steps:
+    - name: Setup new properties for artifacts name
+      id: properties
+      run: |
+        echo "::set-output name=repository::$(echo ${{ github.repository }} | sed 's/\//:/')"
+        echo "::set-output name=commit-timestamp::$(date --date='${{ github.event.head_commit.timestamp }}' +"%s")"
+        echo "::set-output name=commit-short-revision::$(echo -n '${{ github.sha }}' | cut -c1-10)"
+        echo "::set-output name=workflow-name::$(echo -n '${{ github.workflow }}' | sed 's/\W/-/g' | sed 's/^-//g')"
+      shell: bash
+    - name: Setup artifacts name property
+      id: artifacts-name
+      run: "echo ::set-output name=artifacts-name::\
+        github:\
+        ${{ steps.properties.outputs.repository }}:\
+        staging-\
+        ${{ steps.properties.outputs.commit-timestamp }}.\
+        ${{ steps.properties.outputs.commit-short-revision }}.\
+        ${{ steps.properties.outputs.workflow-name }}.\
+        ${{ github.run_number }}"
+      shell: bash
