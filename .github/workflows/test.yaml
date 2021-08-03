@@ -1,0 +1,17 @@
+---
+name: test
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Artifacts Setup
+        id: artifacts-setup
+        uses: ./
+        with:
+          artifacts-url: ${{ secrets.ARTIFACTS_URL }}
+      - name: Print the artifacts name
+        run: echo ${{ steps.artifacts-setup.outputs.artifacts-name }}
